@@ -30,7 +30,7 @@ app.post("/api/verify", async (req, res) => {
     } = req.body;
 
     if (!userIntent || !proposedAction || !contractAddress || !chainId || !actionId || !targetAddress || !amountWei) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "missing required fields" });
     }
 
     // 1. Ask Gemini to arbitrate

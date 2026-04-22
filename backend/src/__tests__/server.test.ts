@@ -23,7 +23,7 @@ describe("Micro-Arbiter API", () => {
   it("should return 400 if required fields are missing", async () => {
     const res = await request(app).post("/api/verify").send({});
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe("Missing required fields");
+    expect(res.body.error).toBe("missing required fields");
   });
 
   it("should reject an action if Gemini rejects it", async () => {

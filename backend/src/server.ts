@@ -29,6 +29,7 @@ app.post("/api/verify", async (req, res) => {
       // Phase 3: We will add circlePaymentToken here later
     } = req.body;
 
+    console.log(req.body);
     if (!userIntent || !proposedAction || !contractAddress || !chainId || !actionId || !targetAddress || !amountWei) {
       return res.status(400).json({ error: "missing required fields" });
     }

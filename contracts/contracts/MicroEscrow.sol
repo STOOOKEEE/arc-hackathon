@@ -10,6 +10,7 @@ contract MicroEscrow {
     address public arbiterPublicKey;
     
     // Tracks executed actions to prevent replay attacks
+    // TODO: Consider adding a pausable state for emergencies
     mapping(bytes32 => bool) public executedTransactions;
 
     event ActionExecuted(bytes32 indexed actionId, address indexed target, uint256 amount);

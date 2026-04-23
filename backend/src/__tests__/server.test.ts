@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../server";
 import { arbitrateAction } from "../gemini";
+import * as circle from "../circle";
 
 // Mock the Gemini API call so we don't need a real key/network call during tests
 jest.mock("../gemini");
@@ -26,7 +27,44 @@ describe("Micro-Arbiter API", () => {
     expect(res.body.error).toBe("missing required fields");
   });
 
-  it("should reject an action if Gemini rejects it", async () => {
+  it("should return 402 Payment Required if no circlePaymentToken is provided", async () => {
+    const payload = {
+      userIntent: "Don't spend more than 1 USDC",
+      proposedAction: "Swap 10 USDC",
+      contractAddress: "0x123",
+      chainId: 1,
+      actionId: "0xabc",
+      targetAddress: "0x456",
+      amountWei: "1000000000000000000",
+    };
+
+    const res = await request(app).post("/api/verify").send(payload);
+    
+    expect(res.status).toBe(402);
+    expect(res.body.error).toBe("Payment Required");
+    expect(res.body.invoice).toBeDefined();
+    expect(res.body.invoice.currency).toBe("USDC");
+  });
+
+  it("should return 401 if circlePaymentToken is invalid", async () => {
+    const payload = {
+      userIntent: "Don't spend more than 1 USDC",
+      proposedAction: "Swap 10 USDC",
+      contractAddress: "0x123",
+      chainId: 1,
+      actionId: "0xabc",
+      targetAddress: "0x456",
+      amountWei: "1000000000000000000",
+      circlePaymentToken: "invalid_token_123" // Invalid because it doesn't start with tok_
+    };
+
+    const res = await request(app).post("/api/verify").send(payload);
+    
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe("Invalid or expired payment token");
+  });
+
+  it("should reject an action if Gemini rejects it (with valid token)", async () => {
     mockedArbitrateAction.mockResolvedValue({
       status: "REJECT",
       reason: "Action exceeds budget constraint",
@@ -40,6 +78,7 @@ describe("Micro-Arbiter API", () => {
       actionId: "0xabc",
       targetAddress: "0x456",
       amountWei: "1000000000000000000",
+      circlePaymentToken: "tok_valid_test_token"
     };
 
     const res = await request(app).post("/api/verify").send(payload);
@@ -50,7 +89,7 @@ describe("Micro-Arbiter API", () => {
     expect(res.body.signature).toBeNull();
   });
 
-  it("should approve and sign an action if Gemini approves it", async () => {
+  it("should approve and sign an action if Gemini approves it (with valid token)", async () => {
     mockedArbitrateAction.mockResolvedValue({
       status: "APPROVE",
       reason: "Action is safe and within budget",
@@ -64,6 +103,7 @@ describe("Micro-Arbiter API", () => {
       actionId: "0x1111111111111111111111111111111111111111111111111111111111111111",
       targetAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
       amountWei: "50000000000000000",
+      circlePaymentToken: "tok_valid_test_token"
     };
 
     const res = await request(app).post("/api/verify").send(payload);

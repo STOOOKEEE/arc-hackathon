@@ -1,54 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #050a10;
-  --color-foreground: #2dd4bf; /* Teal 400 as default text */
+  --color-background: #000000;
+  --color-foreground: #f8fafc; /* Slate 50 */
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    /* Force monospace for the whole app to fit the theme */
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    /* Clean sans-serif font for high-end SaaS feel */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden; /* Prevent body scroll, manage in layout */
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
   }
 }
 
-/* Sci-fi Scrollbar */
+/* Elegant Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-  border-left: 1px solid rgba(45, 212, 191, 0.1);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(45, 212, 191, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(45, 212, 191, 0.6);
-}
-
-/* CRT Scanline overlay effect */
-.scanlines {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.1)
-  );
-  background-size: 100% 4px;
-  pointer-events: none;
-  z-index: 50;
-  opacity: 0.3;
+  background: rgba(255, 255, 255, 0.2);
 }

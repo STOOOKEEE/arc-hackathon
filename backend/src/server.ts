@@ -84,4 +84,13 @@ app.post("/api/verify", async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 3001;
+
+// Start the server if we are not running tests
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`🚀 Micro-Arbiter Backend is running on port ${PORT}`);
+  });
+}
+
 export default app;

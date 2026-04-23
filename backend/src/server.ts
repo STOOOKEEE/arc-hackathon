@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { arbitrateAction } from "./gemini";
 import { signApprovedAction, getArbiterPublicKey } from "./crypto";
+import { createInvoice, verifyPaymentToken, ARBITRATION_FEE_USDC } from "./circle";
 
 dotenv.config();
 
@@ -26,14 +27,31 @@ app.post("/api/verify", async (req, res) => {
       actionId, 
       targetAddress, 
       amountWei,
-      // Phase 3: We will add circlePaymentToken here later
+      circlePaymentToken // x402 payment token
     } = req.body;
 
     if (!userIntent || !proposedAction || !contractAddress || !chainId || !actionId || !targetAddress || !amountWei) {
       return res.status(400).json({ error: "missing required fields" });
     }
 
-    // 1. Ask Gemini to arbitrate
+    // 1. Nanopayments Guard (The 402 Flow)
+    if (!circlePaymentToken) {
+      // No token provided? Generate an invoice and return HTTP 402
+      const invoice = await createInvoice(contractAddress);
+      return res.status(402).json({
+        error: "Payment Required",
+        message: `Arbitration requires a micro-payment of ${ARBITRATION_FEE_USDC} USDC.`,
+        invoice
+      });
+    }
+
+    // Token provided? Verify it.
+    const isValidPayment = await verifyPaymentToken(circlePaymentToken);
+    if (!isValidPayment) {
+      return res.status(401).json({ error: "Invalid or expired payment token" });
+    }
+
+    // 2. Ask Gemini to arbitrate
     const verdict = await arbitrateAction(userIntent, proposedAction);
 
     // 2. If rejected, return immediately
